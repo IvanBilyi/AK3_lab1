@@ -1,17 +1,26 @@
-.syntax unified
-.cpu cortex-m4
-.thumb
+.syntax unified        /* Використання сучасного уніфікованого синтаксису ARM */
+.cpu cortex-m4         /* Вказівка цільового процесора архітектури Cortex-M4 */
+.thumb                 /* Робота в режимі Thumb */
 
+// Оголошує мітки як глобальні, щоб лінкер міг знайти їх у пам'яті
 .global vtable
 .global _hard_reset
 
+/* * Таблиця векторів (Vector Table) 
+ * перші дані, які процесор зчитує з пам'яті при подачі живлення.
+ */
 .type vtable, %object
 vtable:
-    .word _stack_start
-    .word _hard_reset + 1
+    .word _stack_start     /* 1 слово: Початкове значення покажчика стеку */
+    .word _hard_reset + 1  /* 2 слово: Адреса початку виконання (+1 для Thumb-режиму) */
     .size vtable, . - vtable
 
+/* * Точка входу _hard_reset
+ * Код, який виконується відразу після скидання або ввімкнення.
+ */
 _hard_reset:
-    ldr r0, =_stack_start
-    mov sp, r0
-    b _hard_reset
+    ldr r0, =_stack_start  /* Завантажує адресу вершини стеку в регістр r0 */
+    mov sp, r0             /* Копіює цю адресу в спеціальний регістр стеку (SP) */
+
+loop:
+    b loop                 /* Нескінченний цикл: перехід на початок самого себе */
